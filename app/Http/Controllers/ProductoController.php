@@ -1,33 +1,63 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Models\Producto;
 use Illuminate\Http\Request;
+use App\Models\Producto;
+use App\Models\Marca;
+use App\Models\Color;
+use App\Models\Talla;
+use App\Services\ProductoService;
 
 class ProductoController extends Controller
 {
+    protected $productoService;
+
+    public function __construct(ProductoService $productoService)
+    {
+        $this->productoService = $productoService;
+    }
+
     public function index()
     {
-        $productos = Producto::all();
-        return view('producto.index', compact('productos'));
+        $productos = Producto::with('marca')->get();
+
+        // Datos para el formulario modal si se usa en index
+        $marcas = Marca::all();
+        $colores = Color::all();
+        $tallas = Talla::all();
+
+        return view('producto.index', compact('productos', 'marcas', 'colores', 'tallas'));
     }
 
     public function create()
     {
-        return view('producto.create');
+        $marcas = Marca::all();
+        $colores = Color::all();
+        $tallas = Talla::all();
+
+        return view('producto.create', compact('marcas', 'colores', 'tallas'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'nombre' => 'required',
-            'precio' => 'required|numeric',
-            'stock' => 'required|integer',
+            'codigo' => 'required|string',
+            'descripcion' => 'required|string',
+            'costo' => 'required|numeric',
+            'margen' => 'required|numeric',
+            'marca' => 'required|string',
+            'udxcaja' => 'required|integer',
         ]);
 
-        Producto::create($request->all());
+        try {
+            $usuarioNombre = 'admin'; // No autenticación aún
+            $this->productoService->crearProducto($request->all(), $usuarioNombre);
 
-        return redirect()->route('producto.index')->with('success', 'Producto creado exitosamente.');
+            return redirect()->route('producto.index')->with('success', 'Producto creado exitosamente.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()])->withInput();
+        }
     }
 
     public function show(Producto $producto)
@@ -37,31 +67,36 @@ class ProductoController extends Controller
 
     public function edit(Producto $producto)
     {
-        return view('producto.edit', compact('producto'));
+        $marcas = Marca::all();
+        $colores = Color::all();
+        $tallas = Talla::all();
+
+        return view('producto.edit', compact('producto', 'marcas', 'colores', 'tallas'));
     }
 
     public function update(Request $request, Producto $producto)
     {
+        // Por ahora sigue usando lógica simple sin servicio
         $request->validate([
-            'nombre' => 'required',
-            'precio' => 'required|numeric',
-            'stock' => 'required|integer',
+            'descripcion' => 'required|string',
+            'umed' => 'required|string',
+            'udxcaja' => 'required|integer',
         ]);
 
-        $producto->update($request->all());
+        $producto->update($request->only(['descripcion', 'umed', 'udxcaja']));
 
         return redirect()->route('producto.index')->with('success', 'Producto actualizado.');
     }
 
-
-    public function DeleteConfirm(Producto $producto)
-{
-    return view('producto.delete', compact('producto'));
-}
+    public function deleteConfirm(Producto $producto)
+    {
+        return view('producto.delete', compact('producto'));
+    }
 
     public function destroy(Producto $producto)
     {
         $producto->delete();
+
         return redirect()->route('producto.index')->with('success', 'Producto eliminado.');
     }
 }
