@@ -10,16 +10,17 @@
 
       <div class="modal-body row g-3 px-4 py-3">
 
+
         <div class="col-md-4">
           <label class="form-label">Código</label>
           <input type="text" class="form-control" name="codigo" required>
         </div>
 
-        <div class="col-md-8">
-          <label class="form-label">Descripción</label>
-          <input type="text" class="form-control" name="descripcion" required>
-        </div>
-
+      <div class="col-md-8">
+        <label class="form-label">Descripción</label>
+        <input type="text" class="form-control" name="descripcion" required>
+      </div> 
+  
         <div class="col-md-4">
           <label class="form-label">Costo</label>
           <input type="number" step="0.01" class="form-control" name="costo" required>
@@ -37,37 +38,43 @@
 
         <div class="col-md-4">
           <label class="form-label">Marca</label>
-          <select class="form-select" name="marca" required>
+          <select class="form-select" name="marca_id" required>
+            <option value="">Seleccione marca</option>
             @foreach ($marcas as $marca)
-              <option value="{{ $marca->nombre }}">{{ $marca->nombre }}</option>
+              <option value="{{ $marca->id }}">{{ $marca->nombre }}</option>
             @endforeach
           </select>
         </div>
 
         <div class="col-md-4">
           <label class="form-label">Color</label>
-          <select class="form-select" name="color">
+          <select class="form-select" name="color_id">
             <option value="">(Opcional)</option>
             @foreach ($colores as $color)
-              <option value="{{ $color->nombre }}">{{ $color->nombre }}</option>
+              <option value="{{ $color->id }}">{{ $color->nombre }}</option>
             @endforeach
           </select>
         </div>
 
         <div class="col-md-4">
           <label class="form-label">Talla</label>
-          <select class="form-select" name="talla">
+          <select class="form-select" name="talla_id">
             <option value="">(Opcional)</option>
             @foreach ($tallas as $talla)
-              <option value="{{ $talla->valor }}">{{ $talla->valor }}</option>
+              <option value="{{ $talla->id }}">{{ $talla->valor }}</option>
             @endforeach
           </select>
         </div>
 
-        <div class="col-md-4">
-          <label class="form-label">Unidad de medida</label>
-          <input type="text" class="form-control" name="umed" value="UNID" required>
-        </div>
+          <div class="col-md-4">
+            <label class="form-label">Unidad de medida</label>
+            <select class="form-select" name="unidad_medida_id" required>
+              <option value="">Seleccione unidad de medida</option>
+              @foreach ($unidadMedidas as $umedida)
+                <option value="{{ $umedida->id }}">{{ $umedida->nombre }} ({{ $umedida->abreviatura }})</option>
+              @endforeach
+            </select>
+          </div>
 
         <div class="col-md-4">
           <label class="form-label">Pasillo</label>
@@ -143,7 +150,13 @@
       <div class="modal-footer">
         <button type="submit" class="btn btn-primary">Guardar</button>
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Buscar</button>
       </div>
+
+
+ 
+
+
     </form>
   </div>
 </div>

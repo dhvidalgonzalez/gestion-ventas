@@ -25,6 +25,7 @@ class BaseSeeder extends Seeder
             PpumSeeder::class,
             CantidadPorMayorSeeder::class,
             ImpuestoSeeder::class,
+            UnidadMedidasSeeder::class,
         ]);
     }
 

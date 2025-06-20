@@ -7,6 +7,7 @@ use App\Models\Producto;
 use App\Models\Marca;
 use App\Models\Color;
 use App\Models\Talla;
+use App\Models\UnidadMedida;
 use App\Services\ProductoService;
 
 class ProductoController extends Controller
@@ -20,14 +21,14 @@ class ProductoController extends Controller
 
     public function index()
     {
-        $productos = Producto::with('marca')->get();
+        $productos = Producto::with(['marca', 'color', 'talla', 'unidadMedida'])->get();
 
-        // Datos para el formulario modal si se usa en index
         $marcas = Marca::all();
         $colores = Color::all();
         $tallas = Talla::all();
+        $unidadMedidas = UnidadMedida::all();
 
-        return view('producto.index', compact('productos', 'marcas', 'colores', 'tallas'));
+        return view('producto.index', compact('productos', 'marcas', 'colores', 'tallas', 'unidadMedidas'));
     }
 
     public function create()
@@ -35,23 +36,42 @@ class ProductoController extends Controller
         $marcas = Marca::all();
         $colores = Color::all();
         $tallas = Talla::all();
+        $unidadMedidas = UnidadMedida::all();
 
-        return view('producto.create', compact('marcas', 'colores', 'tallas'));
+        return view('producto.create', compact('marcas', 'colores', 'tallas', 'unidadMedidas'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'codigo' => 'required|string',
-            'descripcion' => 'required|string',
-            'costo' => 'required|numeric',
-            'margen' => 'required|numeric',
-            'marca' => 'required|string',
-            'udxcaja' => 'required|integer',
+            'codigo'             => 'required|string|max:50|unique:productos,codigo',
+            'descripcion'        => 'required|string|max:255',
+            'costo'              => 'required|numeric|min:0',
+            'margen'             => 'required|numeric|min:0',
+            'udxcaja'            => 'required|integer|min:1',
+            'unidad_medida_id'   => 'required|exists:unidad_medidas,id',
+            'marca_id'           => 'required|exists:marcas,id',
+            'color_id'           => 'nullable|exists:colores,id',
+            'talla_id'           => 'nullable|exists:tallas,id',
+            'pasillo'            => 'nullable|integer|min:0',
+            'venta_por_mayor'    => 'nullable|integer|min:1',
+            'tipo_envase'        => 'nullable|string|max:100',
+            'peso_drenado'       => 'nullable|numeric|min:0',
+            'factor'             => 'nullable|numeric|min:0',
+            'margen2'            => 'nullable|numeric|min:0',
+            'margen3'            => 'nullable|numeric|min:0',
+            'impuesto_adicional' => 'nullable|string|max:20',
+            'cod_cmarke'         => 'nullable|string|max:50',
+            'depto'              => 'nullable|string|max:50',
+            'grupo'              => 'nullable|string|max:50',
+            'subfamilia'         => 'nullable|string|max:50',
+            'avance_temporada'   => 'nullable|string|max:50',
+            'enviar_a_caja'      => 'nullable|boolean',
         ]);
 
         try {
-            $usuarioNombre = 'admin'; // No autenticación aún
+            $usuarioNombre = 'admin'; // Asume que se usa un usuario fijo por ahora
+
             $this->productoService->crearProducto($request->all(), $usuarioNombre);
 
             return redirect()->route('producto.index')->with('success', 'Producto creado exitosamente.');
@@ -70,22 +90,34 @@ class ProductoController extends Controller
         $marcas = Marca::all();
         $colores = Color::all();
         $tallas = Talla::all();
+        $unidadMedidas = UnidadMedida::all();
 
-        return view('producto.edit', compact('producto', 'marcas', 'colores', 'tallas'));
+        return view('producto.edit', compact('producto', 'marcas', 'colores', 'tallas', 'unidadMedidas'));
     }
 
     public function update(Request $request, Producto $producto)
     {
-        // Por ahora sigue usando lógica simple sin servicio
         $request->validate([
-            'descripcion' => 'required|string',
-            'umed' => 'required|string',
-            'udxcaja' => 'required|integer',
+            'descripcion'      => 'required|string|max:255',
+            'umed'             => 'required|string|max:10',
+            'udxcaja'          => 'required|integer|min:1',
+            'marca_id'         => 'required|exists:marcas,id',
+            'color_id'         => 'nullable|exists:colores,id',
+            'talla_id'         => 'nullable|exists:tallas,id',
+            'unidad_medida_id' => 'required|exists:unidad_medidas,id',
         ]);
 
-        $producto->update($request->only(['descripcion', 'umed', 'udxcaja']));
+        $producto->update([
+            'descripcion'       => $request->descripcion,
+            'umed'              => $request->umed,
+            'udxcaja'           => $request->udxcaja,
+            'marca_id'          => $request->marca_id,
+            'color_id'          => $request->color_id,
+            'talla_id'          => $request->talla_id,
+            'unidad_medida_id'  => $request->unidad_medida_id,
+        ]);
 
-        return redirect()->route('producto.index')->with('success', 'Producto actualizado.');
+        return redirect()->route('producto.index')->with('success', 'Producto actualizado correctamente.');
     }
 
     public function deleteConfirm(Producto $producto)
