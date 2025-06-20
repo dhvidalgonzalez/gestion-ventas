@@ -44,8 +44,8 @@ class ProductoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'codigo'             => 'required|string|max:50|unique:productos,codigo',
-            'descripcion'        => 'required|string|max:255',
+            'codigo'             => 'required|string|max:14|unique:productos,codigo',
+            'descripcion'        => 'required|string|max:100',
             'costo'              => 'required|numeric|min:0',
             'margen'             => 'required|numeric|min:0',
             'udxcaja'            => 'required|integer|min:1',
